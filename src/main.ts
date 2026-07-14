@@ -35,8 +35,7 @@ async function bootstrap() {
       }
 
       const allowedOrigins = [
-        "https://chsm.shk.solutions",
-        "https://serv.chsm.pro",
+        "https://home-build.smartsoftsystem.de",
         "https://fuenex.de",
         "http://localhost:5173",
         "http://localhost:5174",
