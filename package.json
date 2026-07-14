@@ -7,7 +7,8 @@
     "dev": "bun --hot src/main.ts",
     "start": "bun src/main.ts",
     "build": "bun build ./src/main.ts --outdir ./dist --target=node --packages=external",
-    "test": "bun test"
+    "test": "bun test",
+    "start:prod": "bun dist/main.js"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.24",
