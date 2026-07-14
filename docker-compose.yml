@@ -7,7 +7,7 @@ services:
     container_name: fuenex_bot
     restart: unless-stopped
     ports:
-      - "5012:3000"
+      - "5012:5012"
     env_file:
       - .env
     environment:
