@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TelegramModule } from './telegram/telegram.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConditionalModule, ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -10,7 +10,11 @@ import { ConfigModule } from '@nestjs/config';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    TelegramModule,
+    // Подключаем TelegramModule только если TG_MODULE равен 'true'
+    ConditionalModule.registerWhen(
+      TelegramModule,
+      (env: NodeJS.ProcessEnv) => env.TG_MODULE === 'true',
+    ),
   ],
   controllers: [AppController],
   providers: [AppService],
