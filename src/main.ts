@@ -1,11 +1,14 @@
 import { NestFactory } from "@nestjs/core";
+import express from "express";
 import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import basicAuth from "express-basic-auth";
 
 async function bootstrap() {
   const PORT = process.env.PORT || 3000;
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  app.use(express.json({ limit: "10mb" }));
+  app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
   // Добавляем Basic Auth для Swagger
   app.use(
@@ -41,6 +44,7 @@ async function bootstrap() {
         "http://localhost:5174",
         "http://localhost:3000",
         "http://localhost:3001",
+        "http://localhost:8080",
       ];
 
       if (allowedOrigins.includes(origin)) {

@@ -1,0 +1,45 @@
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  Post,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
+import type { Response } from "express";
+import { ApiKeyGuard } from "../telegram/controller/api-key.guard";
+import { OfferPdfService } from "./offer-pdf.service";
+import type { OfferPdfRequest } from "./dto/offer-pdf-request.dto";
+
+@Controller("api/v1/offer-pdf")
+export class OfferController {
+  private readonly logger = new Logger(OfferController.name);
+
+  constructor(private readonly offerPdfService: OfferPdfService) {}
+
+  @Post()
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(ApiKeyGuard)
+  async renderPdf(
+    @Body() request: OfferPdfRequest,
+    @Res() res: Response,
+  ): Promise<void> {
+    try {
+      const buffer = await this.offerPdfService.render(request);
+      res.set({
+        "Content-Type": "application/pdf",
+        "Content-Length": buffer.length.toString(),
+      });
+      res.end(buffer);
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      this.logger.error(
+        `Render failed for offer ${request?.offer?.offerNumber}: ${detail}`,
+        err instanceof Error ? err.stack : undefined,
+      );
+      res.status(500).json({ error: "PDF render failed", detail });
+    }
+  }
+}
