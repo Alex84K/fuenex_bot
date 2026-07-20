@@ -3,7 +3,7 @@ version: "3.9"
 services:
   app:
     build: .
-    image: fuenex_bot:latest
+    image: fuenex_bun:latest
     container_name: fuenex_bun
     restart: unless-stopped
     ports:
