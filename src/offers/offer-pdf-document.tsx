@@ -146,6 +146,28 @@ const hasRenderableContent = (nodes: any[] = []): boolean => {
   return false;
 };
 
+// Block-level tags treated like <p>. Anything not converted to a react-pdf
+// primitive (View/Text) is passed through as a raw DOM element, which react-pdf
+// cannot lay out or paginate — it silently clips. Handling these here is what
+// keeps long <div>-based descriptions flowing across pages.
+const BLOCK_TAGS = new Set([
+  "div", "section", "article", "header", "footer", "blockquote",
+  "h1", "h2", "h3", "h4", "h5", "h6",
+]);
+
+// react-pdf forbids a bare string directly inside a <View>; wrap any string
+// child in <Text>. Element children pass through untouched.
+const wrapStrings = (children: React.ReactNode): React.ReactNode => {
+  const arr = Array.isArray(children) ? children : [children];
+  return arr.map((c, i) => (typeof c === "string" ? <Text key={i}>{c}</Text> : c));
+};
+
+const hasBlockChild = (nodes: any[] = []): boolean =>
+  nodes.some(
+    (c) => c && c.name &&
+      (c.name === "p" || c.name === "ul" || c.name === "ol" || BLOCK_TAGS.has(c.name)),
+  );
+
 const HtmlText = ({ html, preserveEmptyLines = false }: { html: string; preserveEmptyLines?: boolean }) => {
   if (!html) return null;
 
@@ -156,14 +178,18 @@ const HtmlText = ({ html, preserveEmptyLines = false }: { html: string; preserve
   const options = {
     replace: (domNode: DOMNode) => {
       if (domNode instanceof Element) {
-        if (domNode.name === "p") {
+        if (domNode.name === "p" || BLOCK_TAGS.has(domNode.name)) {
           const isInsideLi = domNode.parent && (domNode.parent as any).name === "li";
           if (isInsideLi) return <>{domToReact(domNode.children as DOMNode[], options)}</>;
+          if (hasBlockChild(domNode.children as any[])) {
+            return <View style={styles.paragraph}>{wrapStrings(domToReact(domNode.children as DOMNode[], options))}</View>;
+          }
+          const isHeading = /^h[1-6]$/.test(domNode.name);
           const paragraphContent = domToReact(domNode.children as DOMNode[], options);
           const hasVisibleText = hasRenderableContent(domNode.children as any[]);
           return (
             <View style={styles.paragraph}>
-              <Text>{preserveEmptyLines ? (hasVisibleText ? paragraphContent : " ") : paragraphContent}</Text>
+              <Text style={isHeading ? styles.bold : undefined}>{preserveEmptyLines ? (hasVisibleText ? paragraphContent : " ") : paragraphContent}</Text>
             </View>
           );
         }
@@ -192,7 +218,7 @@ const HtmlText = ({ html, preserveEmptyLines = false }: { html: string; preserve
           return <Text style={styles.italic}>{domToReact(domNode.children as DOMNode[], options)}</Text>;
         if (domNode.name === "u")
           return <Text style={styles.underline}>{domToReact(domNode.children as DOMNode[], options)}</Text>;
-        if (preserveEmptyLines && domNode.name === "br") return <Text>{"\n"}</Text>;
+        if (domNode.name === "br") return <Text>{"\n"}</Text>;
       }
     },
   };
