@@ -1,12 +1,13 @@
 {
   "name": "fuenex_bun_bot",
+  "version": "0.1.0",
   "module": "src/main.ts",
   "type": "module",
   "private": true,
   "scripts": {
     "dev": "bun --hot src/main.ts",
     "start": "bun src/main.ts",
-    "build": "bun build ./src/main.ts --outdir ./dist --target=node --packages=external",
+    "build": "GIT_SHA=$(git rev-parse --short HEAD 2>/dev/null) bun build ./src/main.ts --outdir ./dist --target=node --packages=external --env='GIT_SHA*'",
     "test": "bun test",
     "start:prod": "bun dist/main.js"
   },

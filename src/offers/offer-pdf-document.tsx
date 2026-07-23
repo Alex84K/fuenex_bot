@@ -11,6 +11,7 @@ import {
 } from "@react-pdf/renderer";
 import parse, { domToReact, type DOMNode, Element } from "html-react-parser";
 import type { OfferPdfRequest, OfferPositionDto } from "./dto/offer-pdf-request.dto";
+import { PDF_PRODUCER } from "./build-info";
 
 // Local TTF fonts — no network dependency, no CDN hang on first render.
 // process.cwd() == project root both in dev (bun src/main.ts) and prod (bun dist/main.js).
@@ -274,7 +275,7 @@ export const OfferPdfDocument = ({ request }: { request: OfferPdfRequest }) => {
   const { company, offer } = request;
 
   return (
-    <Document>
+    <Document producer={PDF_PRODUCER} creator={PDF_PRODUCER}>
       <Page size="A4" style={styles.page}>
         {/* ── HEADER ── */}
         <View style={{ marginBottom: 20 }}>
